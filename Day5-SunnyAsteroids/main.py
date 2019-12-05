@@ -2,7 +2,9 @@
 
 # Start: 11:16AM
 # Based on day 2 code
+# Stop: 1:41, but took some detours for work and school pickup
 
+# Code is now BADLY in need of cleanup/refactoring, lots of dupe in the param/immediate mode and input parsing
 import sys
 
 def read_input():
@@ -13,7 +15,7 @@ def read_input():
 def output(x):
     print("Output:", x)
     if x != 0:
-        print("WARNING!")
+        print("-------WARNING!---------")
         
 
 def execute(pinput):
@@ -27,7 +29,7 @@ def execute(pinput):
         #print("Instruction Pointer", new_start)
         opcode = pinput[new_start] % 100
         param_mode = str(pinput[new_start]).zfill(5)
-        print(f"c:{count} n:{new_start} o:{opcode} p:{param_mode} {pinput[new_start+1]} {pinput[new_start+2]} {pinput[new_start+3]}")
+        #print(f"c:{count} n:{new_start} o:{opcode} p:{param_mode} {pinput[new_start+1]} {pinput[new_start+2]} {pinput[new_start+3]}")
         if opcode == 99:
             print("HALT")
             break
@@ -97,6 +99,59 @@ def execute(pinput):
                 output(pinput[out_idx])
                 
             new_start += 2
+
+        elif opcode == 5:
+            (r1, r2) = pinput[new_start+1:new_start+3]
+            if param_mode[2] == "0":
+                print(f"--pos mode {r1} {pinput[r1]}")
+                r1 = pinput[r1]
+
+            if param_mode[1] == "0":
+                r2 = pinput[r2]
+                
+            if (r1 != 0):
+                print(f"jumping to {r2}")
+                new_start = r2
+                continue
+    
+            new_start += 3
+            
+        elif opcode == 6:
+            (r1, r2) = pinput[new_start+1:new_start+3]
+            if param_mode[2] == "0":
+                r1 = pinput[r1]
+
+            if param_mode[1] == "0":
+                r2 = pinput[r2]
+                
+            if (r1 == 0):
+                print(f"jumping to {r2}")
+                new_start = r2
+                continue
+
+            new_start += 3
+
+        elif opcode == 7:
+            (r1, r2, r3) = pinput[new_start+1:new_start+4]
+            if param_mode[2] == "0":
+                r1 = pinput[r1]
+
+            if param_mode[1] == "0":
+                r2 = pinput[r2]
+                
+            pinput[r3] = 1 if (r1 < r2) else 0
+            new_start += 4
+
+        elif opcode == 8:
+            (r1, r2, r3) = pinput[new_start+1:new_start+4]
+            if param_mode[2] == "0":
+                r1 = pinput[r1]
+
+            if param_mode[1] == "0":
+                r2 = pinput[r2]
+                
+            pinput[r3] = 1 if (r1 == r2) else 0
+            new_start += 4            
 
         else:
             print("INVALID OPCODE:", opcode)
