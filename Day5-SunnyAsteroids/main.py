@@ -29,133 +29,63 @@ def execute(pinput):
         #print("Instruction Pointer", new_start)
         opcode = pinput[new_start] % 100
         param_mode = str(pinput[new_start]).zfill(5)
-        #print(f"c:{count} n:{new_start} o:{opcode} p:{param_mode} {pinput[new_start+1]} {pinput[new_start+2]} {pinput[new_start+3]}")
+        inst_len = {99: 0,   1: 3,   2: 3,
+                    3: 1,    4: 1,   5: 2,
+                    6: 2,    7: 3,   8: 3}
+        print(f"c:{count} n:{new_start} o:{opcode} p:{param_mode} {pinput[new_start+1]} {pinput[new_start+2]} {pinput[new_start+3]}")
+        
+        r = pinput[new_start + 1:new_start + 4]
+        for idx, reg in enumerate(r):
+            if idx > inst_len[opcode] - 1:
+                break
+            
+            if param_mode[2-idx] == "0":
+                print(f"--{idx} pos @{reg} = {pinput[reg]}")
+                r[idx] = pinput[reg]
+            
+
         if opcode == 99:
             print("HALT")
             break
 
         elif opcode == 1: # ADD Opcode
-            (add_idx1, add_idx2, sum_idx) = pinput[new_start + 1:new_start + 4]
-            print(add_idx1, add_idx2, sum_idx)
-            if param_mode[2] == "1":
-                add1 = add_idx1
-                print("--1 imm mode", add_idx1)
-            else:
-                add1 = pinput[add_idx1]
-                print("--1 pos", add_idx1)
-
-            if param_mode[1] == "1":
-                add2 = add_idx2
-                print("--2 imm", add_idx2)
-            else:
-                add2 = pinput[add_idx2]
-                print("--2 pos", add_idx2)
-
-            if param_mode[0] == "1":
-                print("ERROR, immediate mode for output")
-
-            print(f"storing {add1} + {add2} to {sum_idx}")
-            pinput[sum_idx] = add1 + add2
-            new_start += 4
+            print(f"storing {r[0]} + {r[1]} to @{r[2]}")
+            pinput[r[2]] = r[0]+r[1]
 
         elif opcode == 2: # MULT Opcode
-            #print("in", pinput[new_start + 1:new_start + 4])
-            (mult_in1, mult_in2, mult_idx) = pinput[new_start+1:new_start+4]
-            if param_mode[2] == "1":
-                print("--1 imm", mult_in1)
-                m1 = mult_in1
-            else:
-                print("--1 pos", mult_in1)
-                m1 = pinput[mult_in1]
-
-            if param_mode[1] == "1":
-                print("--2 imm", mult_in2)
-                m2 = mult_in2
-            else:
-                print("--2 pos", mult_in2)
-                m2 = pinput[mult_in2]
-
-            if param_mode[0] == "1":
-                print("ERROR2, immediate mode for output")                
-                
-            #print(mult_in1, mult_in2, mult_idx)
-            print(f"Setting {mult_idx} to {m1} * {m2}")
-            pinput[mult_idx] = m1 * m2
-            new_start += 4
+            #print(f"Setting {mult_idx} to {m1} * {m2}")
+            pinput[r[2]] = r[0]*r[1]
 
         elif opcode == 3:
-            out_idx = pinput[new_start+1]
-            print(f"Setting pos {out_idx} to 1")
-            pinput[out_idx] = int(input(">>"))
-            new_start += 2
+            print(f"Setting pos @{r[0]} to 5")
+            pinput[r[0]] = int(input(">>"))
 
         elif opcode == 4:
-            out_idx = pinput[new_start+1]
-            
-            if param_mode[2] == "1":
-                output(out_idx)
-            else:
-                print(f"Outputting at {out_idx}")
-                output(pinput[out_idx])
-                
-            new_start += 2
+            output(r[0])                
 
         elif opcode == 5:
-            (r1, r2) = pinput[new_start+1:new_start+3]
-            if param_mode[2] == "0":
-                print(f"--pos mode {r1} {pinput[r1]}")
-                r1 = pinput[r1]
-
-            if param_mode[1] == "0":
-                r2 = pinput[r2]
-                
-            if (r1 != 0):
-                print(f"jumping to {r2}")
-                new_start = r2
+            if (r[0] != 0):
+                print(f"jumping to @{r[1]}")
+                new_start = r[1]
                 continue
-    
-            new_start += 3
             
         elif opcode == 6:
-            (r1, r2) = pinput[new_start+1:new_start+3]
-            if param_mode[2] == "0":
-                r1 = pinput[r1]
-
-            if param_mode[1] == "0":
-                r2 = pinput[r2]
-                
-            if (r1 == 0):
-                print(f"jumping to {r2}")
-                new_start = r2
+            if (r[0] == 0):
+                print(f"jumping to {r[1]}")
+                new_start = r[1]
                 continue
 
-            new_start += 3
-
         elif opcode == 7:
-            (r1, r2, r3) = pinput[new_start+1:new_start+4]
-            if param_mode[2] == "0":
-                r1 = pinput[r1]
-
-            if param_mode[1] == "0":
-                r2 = pinput[r2]
-                
-            pinput[r3] = 1 if (r1 < r2) else 0
-            new_start += 4
+            pinput[new_start+3] = 1 if (r[0] < r[1]) else 0
 
         elif opcode == 8:
-            (r1, r2, r3) = pinput[new_start+1:new_start+4]
-            if param_mode[2] == "0":
-                r1 = pinput[r1]
-
-            if param_mode[1] == "0":
-                r2 = pinput[r2]
-                
-            pinput[r3] = 1 if (r1 == r2) else 0
-            new_start += 4            
+            pinput[new_start+3] = 1 if (r[0] == r[1]) else 0
 
         else:
             print("INVALID OPCODE:", opcode)
             break
+
+        new_start += inst_len[opcode] + 1
 
     return pinput[0]
 
