@@ -128,6 +128,7 @@ def find_cross(scaf):
 
 def main():
     mem = read_input('game_input')
+    mem[0] = 2
     pc = 0
     rb = 0
     pos = (0,0)
