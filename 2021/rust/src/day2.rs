@@ -31,7 +31,7 @@ pub fn part1() {
             ("down", val) => aim += val,
             _ => panic!("unknown direction"),
         };
-        println!("{} {} {}", f, d, aim);
+        //    println!("{} {} {}", f, d, aim);
     }
 
     println!("{}", f * d);
@@ -62,6 +62,5 @@ mod tests {
     #[test]
     fn test_part1() {
         part1();
-        assert_eq!(0, 1);
     }
 }
